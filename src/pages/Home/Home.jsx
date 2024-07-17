@@ -3,6 +3,10 @@ import css from './home.module.css';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useRef } from 'react';
+import projects from '../../data/projects.json';
+
+const personalProjects = projects.filter(project => project.type === 'Personal projects');
+const schoolProjects = projects.filter(project => project.type === 'School projects');
 
 const Home = () => {
 	const rotateX = [280, 350];
@@ -18,8 +22,13 @@ const Home = () => {
 
 	const [timer, setTimer] = useState(0);
 
+	const [selectedId, setSelectedId] = useState(null);
+	const [isFileOpened, setIsFileOpened] = useState(false);
+	const [isFileClosing, setIsFileClosing] = useState(false);
+
 	const [dragging, setDragging] = useState(false);
 	const [fileHovered, setFileHovered] = useState(false);
+	// console.log(projects);
 
 	useEffect(() => {
 		if (dragging && !fileHovered) {
@@ -92,19 +101,15 @@ const Home = () => {
 		}
 	};
 
+	const onFileClick = id => {
+		setSelectedId(id);
+		setIsFileOpened(true);
+	};
+
 	return (
 		<>
 			<div
-				style={{
-					width: '15px',
-					height: '15px',
-					backgroundColor: dragging ? 'green' : 'red',
-					position: 'fixed',
-					top: '10px',
-					left: '10px',
-				}}></div>
-			<div
-				className={css.drawerWrapper}
+				className={`${css.drawerWrapper} ${css.popIn}`}
 				onMouseMove={mouseMove}
 				onTouchMove={mouseMove}
 				onMouseDown={() => {
@@ -131,14 +136,18 @@ const Home = () => {
 						transform: `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`,
 					}}>
 					<DrawerBox
-						text='some text'
+						text='School Projects'
 						fileOnEnter={() => setFileHovered(true)}
 						fileOnLeave={() => setFileHovered(false)}
+						onFileClick={onFileClick}
+						data={schoolProjects}
 					/>
 					<DrawerBox
-						text='other text'
+						text='Personal Projects'
 						fileOnEnter={() => setFileHovered(true)}
 						fileOnLeave={() => setFileHovered(false)}
+						onFileClick={onFileClick}
+						data={personalProjects}
 					/>
 					{/* <DrawerBox text='other text' />
 					<DrawerBox text='other text' /> */}
@@ -160,11 +169,61 @@ const Home = () => {
 					<div className={`${css.drawerWall} ${css.back}`}></div>
 				</div>
 			</div>
+			{isFileOpened && (
+				<div className={css.fileOpen}>
+					<div
+						className={`${css.background} ${isFileClosing && css.out}`}
+						onClick={() => {
+							setIsFileClosing(true);
+							setTimeout(() => {
+								setIsFileClosing(false);
+								setIsFileOpened(false);
+							}, 1000);
+						}}></div>
+
+					<div className={`${css.fileContents} ${isFileClosing && css.up}`}>
+						<h2>{projects[selectedId - 1].name}</h2>
+						<br />
+						<p>{projects[selectedId - 1].description}</p>
+						<br />
+						<p>
+							<strong>Used technologies: </strong>{' '}
+							{projects[selectedId - 1].technologies.map((i, index) =>
+								index == projects[selectedId - 1].technologies.length - 1
+									? `${i}`
+									: `${i}, `
+							)}
+							;
+						</p>
+						{projects[selectedId - 1].link && (
+							<p>
+								<strong>Link: </strong>{' '}
+								<a
+									href={projects[selectedId - 1].link}
+									target='_blank'
+									rel='noreferrer'>
+									{projects[selectedId - 1].link}
+								</a>
+							</p>
+						)}
+						<p>
+							<strong>Project example:</strong>
+						</p>
+						<div className={css.images}>
+							{projects[selectedId - 1].images.map(src => (
+								<img src={src} />
+							))}
+							<div className={css.paper}></div>
+							<div className={css.paper}></div>
+						</div>
+					</div>
+				</div>
+			)}
 		</>
 	);
 };
 
-const DrawerBox = ({ text, fileOnEnter, fileOnLeave }) => {
+const DrawerBox = ({ text, fileOnEnter, fileOnLeave, data, onFileClick }) => {
 	const [opened, setOpened] = useState(false);
 	const [closing, setClosing] = useState(false);
 	const toggle = e => {
@@ -202,17 +261,20 @@ const DrawerBox = ({ text, fileOnEnter, fileOnLeave }) => {
 				</div>
 				<div className={`${css.wallBox} ${css.backBox}`}></div>
 				<div className={`${css.wallBox} ${css.bottomBox}`}>
-					<File fileHover={[fileOnEnter, fileOnLeave]} />
-					<File fileHover={[fileOnEnter, fileOnLeave]} />
-					<File fileHover={[fileOnEnter, fileOnLeave]} />
-					<File fileHover={[fileOnEnter, fileOnLeave]} />
+					{data.map(project => (
+						<File
+							fileHover={[fileOnEnter, fileOnLeave]}
+							data={project}
+							onFileClick={onFileClick}
+						/>
+					))}
 				</div>
 			</div>
 		</div>
 	);
 };
 
-const File = ({ fileHover }) => {
+const File = ({ fileHover, data, onFileClick }) => {
 	const [clicked, setClicked] = useState(null);
 	const fileClick = () => {
 		if (clicked) {
@@ -222,6 +284,7 @@ const File = ({ fileHover }) => {
 			setClicked(true);
 			fileHover[0]();
 		}
+		onFileClick(data.id);
 	};
 
 	return (
@@ -239,7 +302,10 @@ const File = ({ fileHover }) => {
 						clicked === true ? css.clicked : clicked === false ? css.notClicked : ''
 					}`}
 					data-file='true'>
-					test
+					<p style={{ fontSize: '0.7em' }} data-file='true'>
+						{data.name}
+					</p>
+					<img data-file='true' src={data.images[0]} />
 				</div>
 			</div>
 		</div>
