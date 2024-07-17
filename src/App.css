@@ -1,3 +1,26 @@
 #root {
-  text-align: center;
+	text-align: center;
+}
+
+header {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	padding: 1.5rem 1rem 0.5rem;
+	gap: 1rem;
+	z-index: 10;
+  background-color: #2f373785;
+  box-shadow: 0px 10px 15px #2f373785;
+
+	& a {
+		text-decoration: none;
+		color: white;
+		font-size: 1.2rem;
+		transition: all 0.3s ease-in-out;
+		&:hover {
+			color: #a1babb;
+		}
+	}
 }

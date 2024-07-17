@@ -12,7 +12,7 @@
 }
 
 .drawer-container {
-	font-size: clamp(0.7rem, 2.5vw, 1.8rem);
+	font-size: clamp(0.8rem, 2.5vw, 1.8rem);
 	--side-color: #a1babb;
 	--side-color-tint: #b6ccbf;
 	--wall-color: #bdcdd1;
@@ -29,8 +29,6 @@
 	--height: calc(var(--bottom-padding) + (var(--front-height) * var(--box-count)));
 	--border-size: 0.1em;
 	position: relative;
-	/* perspective: 100em;
-    perspective-origin: bottom; */
 	transform: rotateX(-20deg) rotateY(5deg);
 	transform-style: preserve-3d;
 	width: var(--width);
@@ -647,13 +645,13 @@
 		transform: translateY(-200%);
 		position: relative;
 		padding: 2rem 1rem;
-		animation: file-down 2s forwards ease-out;
+		animation: file-down 1s forwards ease-out;
 		background-color: rgb(232, 251, 248);
 		border: 0.1rem solid rgb(81, 87, 86);
 		isolation: isolate;
 		z-index: 5;
 		&.up {
-			animation: file-up 2s forwards ease-out;
+			animation: file-up 1s forwards ease-out;
 		}
 
 		&::before {

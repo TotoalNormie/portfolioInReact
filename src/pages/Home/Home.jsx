@@ -28,23 +28,34 @@ const Home = () => {
 
 	const [dragging, setDragging] = useState(false);
 	const [fileHovered, setFileHovered] = useState(false);
+	const [timeoutId, setTimeoutId] = useState(null);
+
 	// console.log(projects);
 
 	useEffect(() => {
-		if (dragging && !fileHovered) {
-			const timeoutId = setTimeout(() => {
-				setDragging(false);
-			}, 5000);
-
-			return () => {
-				clearTimeout(timeoutId);
-			};
+		if (dragging) {
+			setTimeoutId(
+				setTimeout(() => {
+					setDragging(false);
+				}, 5000)
+			);
 		}
-	}, []);
+		return () => {
+			clearTimeout(timeoutId);
+			setTimeoutId(null);
+		};
+	}, [dragging]);
 
 	useEffect(() => {
 		if (fileHovered) {
-			setDragging(true);
+			clearTimeout(timeoutId);
+			setTimeoutId(null);
+		} else {
+			setTimeoutId(
+				setTimeout(() => {
+					setDragging(false);
+				}, 5000)
+			);
 		}
 	}, [fileHovered]);
 
@@ -58,7 +69,7 @@ const Home = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!dragging) {
+		if (!dragging && !isFileOpened) {
 			setRotationY(prev => prev - 2.5);
 			if (rotationX < 340) {
 				setRotationX(prev => prev + 0.5);
@@ -108,6 +119,17 @@ const Home = () => {
 
 	return (
 		<>
+			{/* <div
+				style={{
+					position: 'absolute',
+					top: '1rem',
+					left: '1rem',
+					display: 'grid',
+					color: 'white',
+				}}>
+				<div>dragging: {dragging ? 'true' : 'false'}</div>
+				<div>file hovered: {fileHovered ? 'true' : 'false'}</div>
+			</div> */}
 			<div
 				className={`${css.drawerWrapper} ${css.popIn}`}
 				onMouseMove={mouseMove}
@@ -132,6 +154,7 @@ const Home = () => {
 				ref={heightRef}>
 				<div
 					className={css.drawerContainer}
+					title='click on files to get more info!'
 					style={{
 						transform: `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`,
 					}}>
@@ -140,6 +163,8 @@ const Home = () => {
 						fileOnEnter={() => setFileHovered(true)}
 						fileOnLeave={() => setFileHovered(false)}
 						onFileClick={onFileClick}
+						isFileOpened={isFileOpened}
+						selectedId={selectedId}
 						data={schoolProjects}
 					/>
 					<DrawerBox
@@ -147,6 +172,8 @@ const Home = () => {
 						fileOnEnter={() => setFileHovered(true)}
 						fileOnLeave={() => setFileHovered(false)}
 						onFileClick={onFileClick}
+						isFileOpened={isFileOpened}
+						selectedId={selectedId}
 						data={personalProjects}
 					/>
 					{/* <DrawerBox text='other text' />
@@ -223,7 +250,15 @@ const Home = () => {
 	);
 };
 
-const DrawerBox = ({ text, fileOnEnter, fileOnLeave, data, onFileClick }) => {
+const DrawerBox = ({
+	text,
+	fileOnEnter,
+	fileOnLeave,
+	data,
+	onFileClick,
+	isFileOpened,
+	selectedId,
+}) => {
 	const [opened, setOpened] = useState(false);
 	const [closing, setClosing] = useState(false);
 	const toggle = e => {
@@ -266,6 +301,8 @@ const DrawerBox = ({ text, fileOnEnter, fileOnLeave, data, onFileClick }) => {
 							fileHover={[fileOnEnter, fileOnLeave]}
 							data={project}
 							onFileClick={onFileClick}
+							isFileOpened={isFileOpened}
+							selectedId={selectedId}
 						/>
 					))}
 				</div>
@@ -274,7 +311,7 @@ const DrawerBox = ({ text, fileOnEnter, fileOnLeave, data, onFileClick }) => {
 	);
 };
 
-const File = ({ fileHover, data, onFileClick }) => {
+const File = ({ fileHover, data, onFileClick, isFileOpened, selectedId }) => {
 	const [clicked, setClicked] = useState(null);
 	const fileClick = () => {
 		if (clicked) {
@@ -286,6 +323,12 @@ const File = ({ fileHover, data, onFileClick }) => {
 		}
 		onFileClick(data.id);
 	};
+
+	useEffect(() => {
+		if (selectedId === data.id && !isFileOpened) {
+			setClicked(false);
+		}
+	}, [isFileOpened]);
 
 	return (
 		<div
